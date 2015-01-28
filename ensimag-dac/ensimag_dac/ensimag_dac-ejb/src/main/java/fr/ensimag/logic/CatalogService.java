@@ -12,7 +12,7 @@ import java.util.List;
 public class CatalogService implements CatalogServiceLocal {
 
 	@EJB
-	ArticleDAOLocal articleDAO;
+	ArticleDAOLocal articleDAO; 
 
 	@Override
 	public List<ArticleVO> getAllProducts() throws Exception {

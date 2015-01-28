@@ -7,15 +7,40 @@ import java.util.List;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
 import javax.faces.bean.ManagedBean;
+import javax.faces.bean.ManagedProperty;
 import javax.faces.bean.SessionScoped;
 
+import fr.ensimag.logic.CommandeServiceLocal;
+import fr.ensimag.util.RepeatPaginator;
 import fr.ensimag.vo.ArticleVO;
+import fr.ensimag.vo.CommandeVO;
+import fr.ensimag.control.CartBean;
 
-@ManagedBean(name = "CommandeBean")
+@ManagedBean(name = "commandeBean")
 @SessionScoped
 public class CommandeBean implements Serializable {
-	private final List<ArticleVO> articles = new ArrayList<ArticleVO>();
+
+	@EJB
+	private CommandeServiceLocal commandeService;
+
+	private List<CommandeVO> commandes;
+
+	private List<ArticleVO> articles;
+
+	private RepeatPaginator paginator;
+	
+	@ManagedProperty(value = "#{cartBean}")
+	private CartBean cartBean;
+
+	public CartBean getCartBean() {
+		return cartBean;
+	}
+
+	public void setCartBean(CartBean cartBean) {
+		this.cartBean = cartBean;
+	}
 
 	/**
 	 * Creates a new instance of cart
@@ -27,38 +52,34 @@ public class CommandeBean implements Serializable {
 	@PostConstruct
 	public void init() {
 		try {
-
+			articles = new ArrayList<ArticleVO>();
+			articles.addAll(cartBean.getArticles());
+			commandes = new ArrayList<CommandeVO>();
+			
+			this.commandes = this.commandeService.getAllCommands();
+			
 		} catch (final Exception e) {
 		}
 	}
 
-	public void add(final ArticleVO articlevo) {
-		this.articles.add(articlevo);
-	}
+	public Map<CommandeVO, Integer> getCommandeContents() {
 
-	public void remove(final ArticleVO articlevo) {
-		this.articles.remove(articlevo);
+		Map<CommandeVO, Integer> commandeContents = new HashMap<CommandeVO, Integer>();
+		for (CommandeVO obj : commandes) {
+			commandeContents.put(obj, 1);
+		}
+		return commandeContents;
 	}
 
 	public Map<ArticleVO, Integer> getCartContents() {
 
-		final Map<ArticleVO, Integer> cartContents = new HashMap<ArticleVO, Integer>();
-		for (final ArticleVO obj : this.articles) {
+		Map<ArticleVO, Integer> cartContents = new HashMap<ArticleVO, Integer>();
+		for (ArticleVO obj : articles) {
 			cartContents.put(obj, 1);
 		}
 		return cartContents;
 	}
+	
 
-	public int getCartCount() {
-		return this.articles.size();
-	}
-
-	public float getCartTotalPrice() {
-		float sum = 0;
-		for (final ArticleVO obj : this.articles) {
-			sum = sum + obj.getArticlePrix();
-		}
-		return sum;
-	}
 
 }
